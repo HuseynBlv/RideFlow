@@ -1,0 +1,38 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:rideflow}
+    username: ${DB_USERNAME:rideflow}
+    password: ${DB_PASSWORD:rideflow}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+app:
+  jwt:
+    secret: 0123456789012345678901234567890101234567890123456789012345678901
+    expiration: PT24H
+  dispatch:
+    search-radius-km: 5
+    max-candidate-drivers: 5
+    heartbeat-ttl-seconds: 30
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.rideflow.uberclone: INFO

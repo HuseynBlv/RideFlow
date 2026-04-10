@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: rideflow-postgres
+    environment:
+      POSTGRES_DB: rideflow
+      POSTGRES_USER: rideflow
+      POSTGRES_PASSWORD: rideflow
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rideflow -d rideflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: rideflow-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redis-data:/data
+
+volumes:
+  postgres-data:
+  redis-data:
