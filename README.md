@@ -9,6 +9,7 @@ RideFlow is a simplified Java/Spring Boot ride-hailing backend inspired by Uber.
 - Concurrency-safe ride acceptance with database locking
 - Trip start and completion with pricing and simulated payment
 - WebSocket/STOMP ride updates and driver offer notifications
+- A built-in rider/driver demo UI served from `/`
 
 ## Stack
 
@@ -36,6 +37,12 @@ mvn spring-boot:run
 ```
 
 The default local credentials are configured in [application.yml](/Users/huseynbva/RideFlow/src/main/resources/application.yml).
+
+3. Open the demo UI:
+
+```text
+http://localhost:8080/
+```
 
 ## Key API endpoints
 
