@@ -5,6 +5,7 @@ import com.rideflow.uberclone.driver.entity.DriverProfile;
 import com.rideflow.uberclone.driver.entity.DriverStatus;
 import com.rideflow.uberclone.driver.repository.DriverProfileRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.geo.Circle;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.GeoResult;
@@ -26,7 +27,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-public class DriverGeoIndexService {
+@ConditionalOnProperty(name = "app.dispatch.geo-provider", havingValue = "redis", matchIfMissing = true)
+public class RedisDriverGeoIndex implements DriverGeoIndex {
 
     private static final String DRIVER_GEO_KEY = "drivers:geo";
     private static final String DRIVER_HEARTBEAT_KEY_PREFIX = "drivers:heartbeat:";
@@ -35,7 +37,7 @@ public class DriverGeoIndexService {
     private final DriverProfileRepository driverProfileRepository;
     private final long heartbeatTtlSeconds;
 
-    public DriverGeoIndexService(
+    public RedisDriverGeoIndex(
             StringRedisTemplate redisTemplate,
             DriverProfileRepository driverProfileRepository,
             @Value("${app.dispatch.heartbeat-ttl-seconds}") long heartbeatTtlSeconds
@@ -45,6 +47,7 @@ public class DriverGeoIndexService {
         this.heartbeatTtlSeconds = heartbeatTtlSeconds;
     }
 
+    @Override
     public void updateDriverLocation(DriverProfile driverProfile) {
         String driverId = driverProfile.getId().toString();
         redisTemplate.opsForGeo().add(
@@ -55,11 +58,13 @@ public class DriverGeoIndexService {
         redisTemplate.opsForValue().set(heartbeatKey(driverId), "1", Duration.ofSeconds(heartbeatTtlSeconds));
     }
 
+    @Override
     public void removeDriver(UUID driverId) {
         redisTemplate.opsForZSet().remove(DRIVER_GEO_KEY, driverId.toString());
         redisTemplate.delete(heartbeatKey(driverId.toString()));
     }
 
+    @Override
     public List<NearbyDriverResponse> findNearbyAvailableDrivers(double latitude, double longitude, double radiusKm, int limit) {
         GeoResults<org.springframework.data.redis.connection.RedisGeoCommands.GeoLocation<String>> results =
                 redisTemplate.opsForGeo().radius(
@@ -75,7 +80,7 @@ public class DriverGeoIndexService {
         Map<UUID, Double> distanceByDriver = new LinkedHashMap<>();
         for (GeoResult<org.springframework.data.redis.connection.RedisGeoCommands.GeoLocation<String>> result : results) {
             String driverId = result.getContent().getName();
-            if (redisTemplate.hasKey(heartbeatKey(driverId))) {
+            if (Boolean.TRUE.equals(redisTemplate.hasKey(heartbeatKey(driverId)))) {
                 distanceByDriver.put(UUID.fromString(driverId), result.getDistance() == null ? 0.0 : result.getDistance().getValue());
             }
         }

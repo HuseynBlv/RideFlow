@@ -6,7 +6,7 @@ import com.rideflow.uberclone.driver.dto.NearbyDriverResponse;
 import com.rideflow.uberclone.driver.entity.DriverProfile;
 import com.rideflow.uberclone.driver.entity.DriverStatus;
 import com.rideflow.uberclone.driver.repository.DriverProfileRepository;
-import com.rideflow.uberclone.driver.service.DriverGeoIndexService;
+import com.rideflow.uberclone.driver.service.DriverGeoIndex;
 import com.rideflow.uberclone.notification.service.NotificationService;
 import com.rideflow.uberclone.payment.entity.Payment;
 import com.rideflow.uberclone.payment.entity.PaymentStatus;
@@ -39,7 +39,7 @@ public class RideService {
     private final DriverProfileRepository driverProfileRepository;
     private final PaymentRepository paymentRepository;
     private final PricingService pricingService;
-    private final DriverGeoIndexService driverGeoIndexService;
+    private final DriverGeoIndex driverGeoIndex;
     private final RideStateService rideStateService;
     private final NotificationService notificationService;
     private final double searchRadiusKm;
@@ -52,7 +52,7 @@ public class RideService {
             DriverProfileRepository driverProfileRepository,
             PaymentRepository paymentRepository,
             PricingService pricingService,
-            DriverGeoIndexService driverGeoIndexService,
+            DriverGeoIndex driverGeoIndex,
             RideStateService rideStateService,
             NotificationService notificationService,
             @Value("${app.dispatch.search-radius-km}") double searchRadiusKm,
@@ -64,7 +64,7 @@ public class RideService {
         this.driverProfileRepository = driverProfileRepository;
         this.paymentRepository = paymentRepository;
         this.pricingService = pricingService;
-        this.driverGeoIndexService = driverGeoIndexService;
+        this.driverGeoIndex = driverGeoIndex;
         this.rideStateService = rideStateService;
         this.notificationService = notificationService;
         this.searchRadiusKm = searchRadiusKm;
@@ -98,7 +98,7 @@ public class RideService {
         rideRepository.save(ride);
         logEvent(ride, RideEventType.MATCHING_STARTED, "Matching started");
 
-        List<NearbyDriverResponse> candidates = driverGeoIndexService.findNearbyAvailableDrivers(
+        List<NearbyDriverResponse> candidates = driverGeoIndex.findNearbyAvailableDrivers(
                 request.pickupLatitude(),
                 request.pickupLongitude(),
                 searchRadiusKm,
@@ -147,7 +147,7 @@ public class RideService {
         driver.setStatus(DriverStatus.BUSY);
         driverProfileRepository.save(driver);
         rideRepository.save(ride);
-        driverGeoIndexService.removeDriver(driver.getId());
+        driverGeoIndex.removeDriver(driver.getId());
         logEvent(ride, RideEventType.DRIVER_ASSIGNED, "Driver " + driver.getId() + " accepted the ride");
 
         RideResponse response = toResponse(ride, List.of());
@@ -195,7 +195,7 @@ public class RideService {
         driver.setStatus(DriverStatus.AVAILABLE);
         driverProfileRepository.save(driver);
         if (driver.getCurrentLatitude() != null && driver.getCurrentLongitude() != null) {
-            driverGeoIndexService.updateDriverLocation(driver);
+            driverGeoIndex.updateDriverLocation(driver);
         }
 
         logEvent(ride, RideEventType.COMPLETED, "Ride completed");

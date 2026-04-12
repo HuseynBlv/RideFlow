@@ -19,12 +19,15 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+      repositories:
+        enabled: false
 
 app:
   jwt:
     secret: 0123456789012345678901234567890101234567890123456789012345678901
     expiration: PT24H
   dispatch:
+    geo-provider: redis
     search-radius-km: 5
     max-candidate-drivers: 5
     heartbeat-ttl-seconds: 30

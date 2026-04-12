@@ -21,20 +21,20 @@ public class DriverService {
 
     private final ProfileService profileService;
     private final DriverProfileRepository driverProfileRepository;
-    private final DriverGeoIndexService driverGeoIndexService;
+    private final DriverGeoIndex driverGeoIndex;
     private final double defaultRadiusKm;
     private final int defaultLimit;
 
     public DriverService(
             ProfileService profileService,
             DriverProfileRepository driverProfileRepository,
-            DriverGeoIndexService driverGeoIndexService,
+            DriverGeoIndex driverGeoIndex,
             @Value("${app.dispatch.search-radius-km}") double defaultRadiusKm,
             @Value("${app.dispatch.max-candidate-drivers}") int defaultLimit
     ) {
         this.profileService = profileService;
         this.driverProfileRepository = driverProfileRepository;
-        this.driverGeoIndexService = driverGeoIndexService;
+        this.driverGeoIndex = driverGeoIndex;
         this.defaultRadiusKm = defaultRadiusKm;
         this.defaultLimit = defaultLimit;
     }
@@ -47,7 +47,7 @@ public class DriverService {
         }
         driver.setStatus(DriverStatus.AVAILABLE);
         driverProfileRepository.save(driver);
-        driverGeoIndexService.updateDriverLocation(driver);
+        driverGeoIndex.updateDriverLocation(driver);
         return toResponse(driver);
     }
 
@@ -59,7 +59,7 @@ public class DriverService {
         }
         driver.setStatus(DriverStatus.OFFLINE);
         driverProfileRepository.save(driver);
-        driverGeoIndexService.removeDriver(driver.getId());
+        driverGeoIndex.removeDriver(driver.getId());
         return toResponse(driver);
     }
 
@@ -71,7 +71,7 @@ public class DriverService {
         driver.setLastLocationAt(Instant.now());
         driverProfileRepository.save(driver);
         if (driver.getStatus() == DriverStatus.AVAILABLE) {
-            driverGeoIndexService.updateDriverLocation(driver);
+            driverGeoIndex.updateDriverLocation(driver);
         }
         return toResponse(driver);
     }
@@ -81,7 +81,7 @@ public class DriverService {
     }
 
     public List<NearbyDriverResponse> findNearbyDrivers(double latitude, double longitude, Double radiusKm, Integer limit) {
-        return driverGeoIndexService.findNearbyAvailableDrivers(
+        return driverGeoIndex.findNearbyAvailableDrivers(
                 latitude,
                 longitude,
                 radiusKm == null ? defaultRadiusKm : radiusKm,
