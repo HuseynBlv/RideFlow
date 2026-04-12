@@ -6,200 +6,228 @@
     <title>RideFlow Demo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-<div class="app-shell">
-    <header class="hero">
-        <div class="hero-copy">
-            <p class="eyebrow">RideFlow Demo</p>
-            <h1>Uber-like ride hailing, shown as a real product flow.</h1>
-            <p class="hero-text">
-                Register a rider and a driver, push driver location, request a trip, accept it, start it, complete it,
-                and watch the ride state update from one screen.
-            </p>
-            <div class="hero-actions">
-                <a class="button primary" href="#rider-console">Open Rider Console</a>
-                <a class="button secondary" href="http://localhost:8080/swagger-ui.html" target="_blank" rel="noreferrer">Swagger</a>
+<div class="page">
+    <header class="topbar">
+        <div class="brand">
+            <span class="brand-mark">RF</span>
+            <div>
+                <p class="kicker">RideFlow</p>
+                <h1>Ride-hailing demo</h1>
             </div>
         </div>
-        <aside class="hero-panel">
-            <div class="metric-card">
-                <span class="metric-label">System Story</span>
-                <strong>JWT auth</strong>
-                <strong>Location + dispatch</strong>
-                <strong>Ride state machine</strong>
-                <strong>Pricing + history</strong>
-            </div>
-            <div class="metric-card accent">
-                <span class="metric-label">Demo Tips</span>
-                <p>Start with the rider and driver forms below.</p>
-                <p>Use the default Baku coordinates for a fast happy path.</p>
-                <p>The active ride panel refreshes automatically every 4 seconds.</p>
-            </div>
-        </aside>
+        <div class="topbar-actions">
+            <a class="button ghost" href="http://localhost:8080/swagger-ui.html" target="_blank" rel="noreferrer">API Docs</a>
+        </div>
     </header>
 
-    <main class="dashboard">
-        <section class="console rider-console" id="rider-console">
-            <div class="console-header">
+    <section class="hero">
+        <div class="hero-copy">
+            <p class="eyebrow">Simplified Uber-like backend</p>
+            <h2>A cleaner demo flow for rider request, driver dispatch, and trip completion.</h2>
+            <p>
+                This screen is meant to show the product story, not every backend capability at once.
+                Start left with the rider, then use the driver panel to accept and finish the ride.
+            </p>
+        </div>
+        <div class="hero-guide">
+            <div class="guide-step"><span>1</span><p>Create rider and driver accounts.</p></div>
+            <div class="guide-step"><span>2</span><p>Send driver location and go online.</p></div>
+            <div class="guide-step"><span>3</span><p>Request, accept, start, and complete the trip.</p></div>
+        </div>
+    </section>
+
+    <main class="workspace">
+        <section class="column" id="rider-console">
+            <div class="section-head">
                 <div>
-                    <p class="eyebrow">Rider</p>
-                    <h2>Request and track a trip</h2>
+                    <p class="eyebrow">Rider Console</p>
+                    <h3>Request a trip</h3>
                 </div>
                 <span class="session-badge" id="rider-session-badge">Not logged in</span>
             </div>
 
-            <div class="card-grid auth-grid">
-                <article class="panel">
-                    <h3>Register Rider</h3>
-                    <form id="rider-register-form" class="stack">
-                        <input name="name" type="text" placeholder="Rider name" required>
-                        <input name="phone" type="text" placeholder="+994500000001" required>
-                        <input name="password" type="password" placeholder="password123" required>
-                        <button class="button primary" type="submit">Create Rider</button>
-                    </form>
-                </article>
-
-                <article class="panel">
-                    <h3>Login Rider</h3>
-                    <form id="rider-login-form" class="stack">
-                        <input name="phone" type="text" placeholder="+994500000001" required>
-                        <input name="password" type="password" placeholder="password123" required>
-                        <button class="button secondary" type="submit">Login</button>
-                    </form>
-                </article>
-            </div>
-
-            <article class="panel">
-                <div class="panel-heading">
-                    <h3>Request Ride</h3>
-                    <button class="button tertiary" type="button" id="rider-history-button">Refresh History</button>
+            <article class="card card-accent">
+                <div class="card-head">
+                    <h4>Access</h4>
+                    <span class="card-tag">Rider</span>
                 </div>
-                <form id="ride-request-form" class="coordinate-grid">
-                    <label>
-                        <span>Pickup Lat</span>
+                <div class="split-form">
+                    <form id="rider-register-form" class="stack">
+                        <label class="field">
+                            <span>Create account</span>
+                            <input name="name" type="text" placeholder="Rider name" required>
+                        </label>
+                        <input name="phone" type="text" placeholder="+994500000001" required>
+                        <input name="password" type="password" placeholder="password123" required>
+                        <button class="button solid" type="submit">Register rider</button>
+                    </form>
+                    <form id="rider-login-form" class="stack">
+                        <label class="field">
+                            <span>Or sign in</span>
+                            <input name="phone" type="text" placeholder="+994500000001" required>
+                        </label>
+                        <input name="password" type="password" placeholder="password123" required>
+                        <button class="button subtle" type="submit">Login rider</button>
+                    </form>
+                </div>
+            </article>
+
+            <article class="card">
+                <div class="card-head">
+                    <h4>Trip Request</h4>
+                    <button class="button ghost" type="button" id="rider-history-button">Refresh history</button>
+                </div>
+                <form id="ride-request-form" class="grid-form">
+                    <label class="field">
+                        <span>Pickup latitude</span>
                         <input name="pickupLatitude" type="number" step="0.0001" value="40.4093" required>
                     </label>
-                    <label>
-                        <span>Pickup Lon</span>
+                    <label class="field">
+                        <span>Pickup longitude</span>
                         <input name="pickupLongitude" type="number" step="0.0001" value="49.8671" required>
                     </label>
-                    <label>
-                        <span>Dropoff Lat</span>
+                    <label class="field">
+                        <span>Dropoff latitude</span>
                         <input name="dropoffLatitude" type="number" step="0.0001" value="40.3777" required>
                     </label>
-                    <label>
-                        <span>Dropoff Lon</span>
+                    <label class="field">
+                        <span>Dropoff longitude</span>
                         <input name="dropoffLongitude" type="number" step="0.0001" value="49.8920" required>
                     </label>
-                    <button class="button primary wide" type="submit">Request Ride</button>
+                    <button class="button solid wide" type="submit">Request ride</button>
                 </form>
             </article>
 
-            <div class="card-grid detail-grid">
-                <article class="panel">
-                    <div class="panel-heading">
-                        <h3>Active Ride</h3>
-                        <button class="button tertiary" type="button" id="rider-refresh-ride">Refresh</button>
-                    </div>
-                    <div id="rider-current-ride" class="empty-state">No active rider ride yet.</div>
-                </article>
+            <article class="card">
+                <div class="card-head">
+                    <h4>Current Ride</h4>
+                    <button class="button ghost" type="button" id="rider-refresh-ride">Refresh</button>
+                </div>
+                <div id="rider-current-ride" class="placeholder">No active rider ride yet.</div>
+            </article>
 
-                <article class="panel">
-                    <h3>Ride History</h3>
-                    <div id="rider-history" class="history-list empty-state">History will appear here.</div>
-                </article>
+            <article class="card">
+                <div class="card-head">
+                    <h4>Rider History</h4>
+                </div>
+                <div id="rider-history" class="placeholder">History will appear here.</div>
+            </article>
+        </section>
+
+        <section class="journey">
+            <div class="journey-card">
+                <p class="eyebrow">Journey</p>
+                <ol class="journey-steps">
+                    <li>Create rider and driver accounts</li>
+                    <li>Push driver location</li>
+                    <li>Put driver online</li>
+                    <li>Request ride</li>
+                    <li>Accept ride</li>
+                    <li>Start trip</li>
+                    <li>Complete trip</li>
+                </ol>
+            </div>
+
+            <div class="journey-card compact">
+                <p class="eyebrow">Live Event Log</p>
+                <div class="journey-actions">
+                    <button class="button ghost" id="clear-events" type="button">Clear</button>
+                </div>
+                <div id="event-log" class="event-log">
+                    <div class="event empty">No events yet. Start with rider or driver registration.</div>
+                </div>
             </div>
         </section>
 
-        <section class="console driver-console" id="driver-console">
-            <div class="console-header">
+        <section class="column" id="driver-console">
+            <div class="section-head">
                 <div>
-                    <p class="eyebrow">Driver</p>
-                    <h2>Go online and work the ride</h2>
+                    <p class="eyebrow">Driver Console</p>
+                    <h3>Receive and complete the trip</h3>
                 </div>
                 <span class="session-badge" id="driver-session-badge">Not logged in</span>
             </div>
 
-            <div class="card-grid auth-grid">
-                <article class="panel">
-                    <h3>Register Driver</h3>
+            <article class="card card-driver">
+                <div class="card-head">
+                    <h4>Access</h4>
+                    <span class="card-tag">Driver</span>
+                </div>
+                <div class="split-form">
                     <form id="driver-register-form" class="stack">
-                        <input name="name" type="text" placeholder="Driver name" required>
+                        <label class="field">
+                            <span>Create account</span>
+                            <input name="name" type="text" placeholder="Driver name" required>
+                        </label>
                         <input name="phone" type="text" placeholder="+994500000002" required>
                         <input name="password" type="password" placeholder="password123" required>
                         <input name="vehicleType" type="text" placeholder="SEDAN" value="SEDAN" required>
                         <input name="plateNumber" type="text" placeholder="10-AA-101" required>
-                        <button class="button primary" type="submit">Create Driver</button>
+                        <button class="button solid-driver" type="submit">Register driver</button>
                     </form>
-                </article>
-
-                <article class="panel">
-                    <h3>Login Driver</h3>
                     <form id="driver-login-form" class="stack">
-                        <input name="phone" type="text" placeholder="+994500000002" required>
+                        <label class="field">
+                            <span>Or sign in</span>
+                            <input name="phone" type="text" placeholder="+994500000002" required>
+                        </label>
                         <input name="password" type="password" placeholder="password123" required>
-                        <button class="button secondary" type="submit">Login</button>
+                        <button class="button subtle" type="submit">Login driver</button>
                     </form>
-                </article>
-            </div>
-
-            <div class="card-grid detail-grid">
-                <article class="panel">
-                    <div class="panel-heading">
-                        <h3>Driver Controls</h3>
-                        <button class="button tertiary" type="button" id="driver-status-button">Refresh Status</button>
-                    </div>
-                    <form id="driver-location-form" class="coordinate-grid compact">
-                        <label>
-                            <span>Lat</span>
-                            <input name="latitude" type="number" step="0.0001" value="40.4093" required>
-                        </label>
-                        <label>
-                            <span>Lon</span>
-                            <input name="longitude" type="number" step="0.0001" value="49.8671" required>
-                        </label>
-                        <button class="button secondary" type="submit">Update Location</button>
-                    </form>
-                    <div class="button-row">
-                        <button class="button primary" type="button" id="driver-go-online">Go Online</button>
-                        <button class="button secondary" type="button" id="driver-go-offline">Go Offline</button>
-                    </div>
-                    <div id="driver-status" class="status-block empty-state">Driver status will appear here.</div>
-                </article>
-
-                <article class="panel">
-                    <div class="panel-heading">
-                        <h3>Ride Actions</h3>
-                        <button class="button tertiary" type="button" id="driver-history-button">Refresh History</button>
-                    </div>
-                    <form id="driver-ride-form" class="stack">
-                        <input name="rideId" id="driver-ride-id" type="text" placeholder="Paste ride ID or use the latest rider ride" required>
-                        <div class="button-row">
-                            <button class="button primary" type="button" data-driver-action="accept">Accept</button>
-                            <button class="button secondary" type="button" data-driver-action="start">Start</button>
-                            <button class="button secondary" type="button" data-driver-action="complete">Complete</button>
-                        </div>
-                    </form>
-                    <div id="driver-current-ride" class="empty-state">Driver ride details will appear here.</div>
-                    <div id="driver-history" class="history-list empty-state">History will appear here.</div>
-                </article>
-            </div>
-        </section>
-
-        <section class="console stream-console">
-            <div class="console-header">
-                <div>
-                    <p class="eyebrow">Dispatch Stream</p>
-                    <h2>Readable event trail for demos</h2>
                 </div>
-                <button class="button tertiary" id="clear-events" type="button">Clear</button>
-            </div>
-            <div id="event-log" class="event-log">
-                <div class="event empty">No events yet. Start with rider or driver registration.</div>
-            </div>
+            </article>
+
+            <article class="card">
+                <div class="card-head">
+                    <h4>Availability</h4>
+                    <button class="button ghost" type="button" id="driver-status-button">Refresh status</button>
+                </div>
+                <form id="driver-location-form" class="inline-form">
+                    <label class="field">
+                        <span>Latitude</span>
+                        <input name="latitude" type="number" step="0.0001" value="40.4093" required>
+                    </label>
+                    <label class="field">
+                        <span>Longitude</span>
+                        <input name="longitude" type="number" step="0.0001" value="49.8671" required>
+                    </label>
+                    <button class="button subtle" type="submit">Update location</button>
+                </form>
+                <div class="action-row">
+                    <button class="button solid-driver" type="button" id="driver-go-online">Go online</button>
+                    <button class="button subtle" type="button" id="driver-go-offline">Go offline</button>
+                </div>
+                <div id="driver-status" class="placeholder">Driver status will appear here.</div>
+            </article>
+
+            <article class="card">
+                <div class="card-head">
+                    <h4>Trip Actions</h4>
+                    <button class="button ghost" type="button" id="driver-history-button">Refresh history</button>
+                </div>
+                <form id="driver-ride-form" class="stack">
+                    <label class="field">
+                        <span>Ride ID</span>
+                        <input name="rideId" id="driver-ride-id" type="text" placeholder="Paste ride ID or use the rider's latest request" required>
+                    </label>
+                    <div class="action-row">
+                        <button class="button solid-driver" type="button" data-driver-action="accept">Accept</button>
+                        <button class="button subtle" type="button" data-driver-action="start">Start</button>
+                        <button class="button subtle" type="button" data-driver-action="complete">Complete</button>
+                    </div>
+                </form>
+                <div id="driver-current-ride" class="placeholder">Driver ride details will appear here.</div>
+            </article>
+
+            <article class="card">
+                <div class="card-head">
+                    <h4>Driver History</h4>
+                </div>
+                <div id="driver-history" class="placeholder">History will appear here.</div>
+            </article>
         </section>
     </main>
 </div>
