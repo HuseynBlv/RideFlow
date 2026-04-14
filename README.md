@@ -112,3 +112,4 @@ flowchart TB
 - PostgreSQL remains the source of truth for ride ownership and ride state.
 - Redis is used for fast geospatial lookup and driver heartbeats.
 - PostGIS is enabled in the database and the schema stores PostGIS geometry alongside numeric coordinates through triggers.
+- Fare calculation is config-driven: `base fare + booking fee + (billable km * per-km rate) + (billable minutes * per-minute rate)`, with a route-distance multiplier and a minimum fare floor.

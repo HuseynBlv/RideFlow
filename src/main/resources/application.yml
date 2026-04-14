@@ -26,6 +26,16 @@ app:
   jwt:
     secret: 0123456789012345678901234567890101234567890123456789012345678901
     expiration: PT24H
+  pricing:
+    base-fare: 2.50
+    booking-fee: 1.00
+    minimum-fare: 5.50
+    per-km-rate: 1.20
+    per-minute-rate: 0.35
+    estimated-average-speed-kph: 24
+    route-distance-multiplier: 1.25
+    minimum-estimated-duration-minutes: 5
+    minimum-final-duration-minutes: 1
   dispatch:
     geo-provider: redis
     search-radius-km: 5
