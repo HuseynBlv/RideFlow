@@ -36,10 +36,14 @@ const flowSteps = [
 ];
 
 function rememberSession(role, authResponse) {
+    const previousUserId = state[role].userId;
     state[role].token = authResponse.accessToken;
     state[role].userId = authResponse.userId;
     localStorage.setItem(`rideflow.${role}.token`, authResponse.accessToken);
     localStorage.setItem(`rideflow.${role}.userId`, authResponse.userId);
+    if (previousUserId && previousUserId !== authResponse.userId) {
+        clearRide(role);
+    }
     renderSessionBadges();
 }
 
@@ -53,6 +57,32 @@ function rememberRide(role, rideId) {
         }
     }
     elements.driverRideId.value = rideId || "";
+}
+
+function clearRide(role) {
+    state[role].rideId = "";
+    localStorage.removeItem(`rideflow.${role}.rideId`);
+    if (role === "rider") {
+        renderRide(elements.riderCurrentRide, null, "No active rider ride yet.");
+    } else {
+        renderRide(elements.driverCurrentRide, null, "Driver ride details will appear here.");
+    }
+    elements.driverRideId.value = state.driver.rideId || state.rider.rideId || "";
+}
+
+function clearSession(role, reason = "") {
+    state[role].token = "";
+    state[role].userId = "";
+    localStorage.removeItem(`rideflow.${role}.token`);
+    localStorage.removeItem(`rideflow.${role}.userId`);
+    clearRide(role);
+    if (role === "driver") {
+        renderDriverStatus(null);
+    }
+    renderSessionBadges();
+    if (reason) {
+        logEvent(`${role} session cleared`, reason);
+    }
 }
 
 function formatMoney(value) {
@@ -107,10 +137,28 @@ async function api(path, options = {}, token = "") {
 
     if (!response.ok) {
         const message = payload?.message || payload?.error || payload?.raw || `HTTP ${response.status}`;
-        throw new Error(message);
+        const error = new Error(message);
+        error.status = response.status;
+        error.payload = payload;
+        throw error;
     }
 
     return payload;
+}
+
+function isSessionError(error) {
+    const message = (error.message || "").toLowerCase();
+    const details = Array.isArray(error.payload?.details)
+        ? error.payload.details.join(" ").toLowerCase()
+        : "";
+    return error.status === 401
+        || error.status === 403
+        || message.includes("user not found")
+        || details.includes("user not found");
+}
+
+function isStaleRideError(error) {
+    return error.status === 404 || error.status === 409;
 }
 
 function renderSessionBadges() {
@@ -184,7 +232,9 @@ function renderRide(target, ride, emptyText) {
     if (!ride) {
         target.innerHTML = `<div class="empty-state">${emptyText}</div>`;
         if (target === elements.riderCurrentRide || target === elements.driverCurrentRide) {
-            state.currentRideStatus = "";
+            if (!state.rider.rideId && !state.driver.rideId) {
+                state.currentRideStatus = "";
+            }
             renderFlowState();
         }
         return;
@@ -276,6 +326,15 @@ async function refreshRide(role) {
         renderRide(role === "rider" ? elements.riderCurrentRide : elements.driverCurrentRide, ride, `No active ${role} ride yet.`);
         rememberRide(role, ride.rideId);
     } catch (error) {
+        if (isSessionError(error)) {
+            clearSession(role, "Saved session expired. Please login again.");
+            return;
+        }
+        if (isStaleRideError(error)) {
+            clearRide(role);
+            logEvent(`${role} ride cleared`, "Saved ride reference was stale and has been removed.");
+            return;
+        }
         logEvent(`${role} ride refresh failed`, error.message, "error");
     }
 }
@@ -289,6 +348,10 @@ async function refreshDriverStatus() {
         const status = await api("/drivers/me/status", { method: "GET" }, state.driver.token);
         renderDriverStatus(status);
     } catch (error) {
+        if (isSessionError(error)) {
+            clearSession("driver", "Saved driver session expired. Please login again.");
+            return;
+        }
         logEvent("driver status failed", error.message, "error");
     }
 }
@@ -304,6 +367,10 @@ async function refreshHistory(role) {
         const rides = await api(path, { method: "GET" }, token);
         renderHistory(target, rides, `${role} history will appear here.`);
     } catch (error) {
+        if (isSessionError(error)) {
+            clearSession(role, "Saved session expired. Please login again.");
+            return;
+        }
         logEvent(`${role} history failed`, error.message, "error");
     }
 }
@@ -316,6 +383,7 @@ async function register(role, payload) {
         method: "POST",
         body: JSON.stringify(body)
     });
+    clearRide(role);
     rememberSession(role, response);
     logEvent(`${role} registered`, `${payload.name} is ready to use the demo.`);
 }
@@ -325,6 +393,7 @@ async function login(role, payload) {
         method: "POST",
         body: JSON.stringify(payload)
     });
+    clearRide(role);
     rememberSession(role, response);
     logEvent(`${role} logged in`, `${payload.phone} authenticated successfully.`);
 }
@@ -482,6 +551,13 @@ function bindButtons() {
     });
     document.querySelector("#clear-events").addEventListener("click", () => {
         elements.eventLog.innerHTML = `<div class="event empty">No events yet. Start with rider or driver registration.</div>`;
+    });
+    document.querySelector("#reset-sessions").addEventListener("click", () => {
+        clearSession("rider");
+        clearSession("driver");
+        elements.riderHistory.innerHTML = `<div class="empty-state">History will appear here.</div>`;
+        elements.driverHistory.innerHTML = `<div class="empty-state">History will appear here.</div>`;
+        logEvent("demo state reset", "Saved sessions, ride IDs, and active views were cleared.");
     });
 
     document.addEventListener("click", async (event) => {
