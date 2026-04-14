@@ -1,3 +1,22 @@
+const STORAGE_VERSION = "2026-04-14-rideflow-demo-v1";
+
+function clearPersistedDemoState() {
+    [
+        "rideflow.rider.token",
+        "rideflow.rider.userId",
+        "rideflow.rider.rideId",
+        "rideflow.driver.token",
+        "rideflow.driver.userId",
+        "rideflow.driver.rideId"
+    ].forEach((key) => localStorage.removeItem(key));
+}
+
+const savedVersion = localStorage.getItem("rideflow.storage.version");
+if (savedVersion !== STORAGE_VERSION) {
+    clearPersistedDemoState();
+    localStorage.setItem("rideflow.storage.version", STORAGE_VERSION);
+}
+
 const state = {
     rider: {
         token: localStorage.getItem("rideflow.rider.token") || "",
