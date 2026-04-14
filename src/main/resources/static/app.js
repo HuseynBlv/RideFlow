@@ -40,6 +40,8 @@ const elements = {
     driverStatus: document.querySelector("#driver-status"),
     driverRideId: document.querySelector("#driver-ride-id"),
     eventLog: document.querySelector("#event-log"),
+    mapSummary: document.querySelector("#map-summary"),
+    journeyMap: document.querySelector("#journey-map"),
     flowRail: document.querySelector("#flow-rail"),
     flowStateLabel: document.querySelector("#flow-state-label"),
     heroPipeline: document.querySelector("#hero-pipeline"),
@@ -199,6 +201,83 @@ function renderSessionBadges() {
     elements.driverRideId.value = state.driver.rideId || state.rider.rideId || "";
 }
 
+function projectMapPoints(points) {
+    if (!points.length) {
+        return new Map();
+    }
+
+    const latitudes = points.map((point) => point.latitude);
+    const longitudes = points.map((point) => point.longitude);
+    const minLat = Math.min(...latitudes);
+    const maxLat = Math.max(...latitudes);
+    const minLon = Math.min(...longitudes);
+    const maxLon = Math.max(...longitudes);
+    const latSpan = Math.max(maxLat - minLat, 0.01);
+    const lonSpan = Math.max(maxLon - minLon, 0.01);
+
+    return new Map(points.map((point) => {
+        const x = 12 + ((point.longitude - minLon) / lonSpan) * 76;
+        const y = 14 + (1 - ((point.latitude - minLat) / latSpan)) * 72;
+        return [point.key, { ...point, x, y }];
+    }));
+}
+
+function renderJourneyMap() {
+    const ride = state.currentRideData;
+    const driver = state.driverPosition;
+
+    if (!ride && !driver) {
+        elements.mapSummary.textContent = "Waiting for coordinates";
+        elements.journeyMap.innerHTML = `<div class="map-empty">Add driver location to activate the map.</div>`;
+        return;
+    }
+
+    const points = [];
+    if (ride) {
+        points.push(
+            { key: "pickup", latitude: ride.pickupLatitude, longitude: ride.pickupLongitude, label: "Pickup" },
+            { key: "dropoff", latitude: ride.dropoffLatitude, longitude: ride.dropoffLongitude, label: "Dropoff" }
+        );
+    }
+    if (driver) {
+        points.push({ key: "driver", latitude: driver.latitude, longitude: driver.longitude, label: "Driver" });
+    }
+
+    const projected = projectMapPoints(points);
+    const pickup = projected.get("pickup");
+    const dropoff = projected.get("dropoff");
+    const driverPoint = projected.get("driver");
+
+    let summary = "Driver location indexed";
+    let driverTarget = null;
+    if (ride) {
+        summary = ride.status === "COMPLETED"
+            ? "Trip finished"
+            : ride.status === "IN_PROGRESS"
+                ? "Driver moving to dropoff"
+                : ride.status === "DRIVER_ASSIGNED" || ride.status === "DRIVER_ARRIVING"
+                    ? "Driver moving to pickup"
+                    : "Pickup and dropoff loaded";
+    }
+    if (driverPoint && pickup && (ride?.status === "REQUESTED" || ride?.status === "MATCHING" || ride?.status === "DRIVER_ASSIGNED" || ride?.status === "DRIVER_ARRIVING")) {
+        driverTarget = pickup;
+    }
+    if (driverPoint && dropoff && (ride?.status === "IN_PROGRESS" || ride?.status === "COMPLETED")) {
+        driverTarget = dropoff;
+    }
+
+    elements.mapSummary.textContent = summary;
+    elements.journeyMap.innerHTML = `
+        <svg class="map-route-layer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            ${pickup && dropoff ? `<line class="map-route" x1="${pickup.x}" y1="${pickup.y}" x2="${dropoff.x}" y2="${dropoff.y}"></line>` : ""}
+            ${driverPoint && driverTarget ? `<line class="map-driver-path" x1="${driverPoint.x}" y1="${driverPoint.y}" x2="${driverTarget.x}" y2="${driverTarget.y}"></line>` : ""}
+        </svg>
+        ${pickup ? `<div class="map-point pickup" style="left:${pickup.x}%;top:${pickup.y}%"><span>${pickup.label}</span></div>` : ""}
+        ${dropoff ? `<div class="map-point dropoff" style="left:${dropoff.x}%;top:${dropoff.y}%"><span>${dropoff.label}</span></div>` : ""}
+        ${driverPoint ? `<div class="map-point driver" style="left:${driverPoint.x}%;top:${driverPoint.y}%"><span>${driverPoint.label}</span></div>` : ""}
+    `;
+}
+
 function deriveFlowState() {
     const rideStatus = state.currentRideStatus || "";
     const driverStatus = state.currentDriverStatus || "";
@@ -312,6 +391,8 @@ function renderFlowState() {
             </article>
         `;
     }).join("");
+
+    renderJourneyMap();
 }
 
 function statusClass(status) {
@@ -324,12 +405,20 @@ function renderRide(target, ride, emptyText) {
         if (target === elements.riderCurrentRide || target === elements.driverCurrentRide) {
             if (!state.rider.rideId && !state.driver.rideId) {
                 state.currentRideStatus = "";
+                state.currentRideData = null;
             }
             renderFlowState();
         }
         return;
     }
     state.currentRideStatus = ride.status;
+    state.currentRideData = {
+        pickupLatitude: ride.pickupLatitude,
+        pickupLongitude: ride.pickupLongitude,
+        dropoffLatitude: ride.dropoffLatitude,
+        dropoffLongitude: ride.dropoffLongitude,
+        status: ride.status
+    };
     const candidateLine = Array.isArray(ride.candidateDriverIds) && ride.candidateDriverIds.length
         ? `<div><strong>Candidates</strong>${ride.candidateDriverIds.join(", ")}</div>`
         : "";
@@ -383,11 +472,15 @@ function renderDriverStatus(status) {
         elements.driverStatus.innerHTML = `<div class="empty-state">Driver status will appear here.</div>`;
         state.currentDriverStatus = "";
         state.driver.hasLocation = false;
+        state.driverPosition = null;
         renderFlowState();
         return;
     }
     state.currentDriverStatus = status.status;
     state.driver.hasLocation = Boolean(status.latitude !== null && status.longitude !== null);
+    state.driverPosition = state.driver.hasLocation
+        ? { latitude: status.latitude, longitude: status.longitude }
+        : null;
     elements.driverStatus.innerHTML = `
         <article class="status-card">
             <div class="panel-heading">
