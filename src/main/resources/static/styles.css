@@ -101,18 +101,20 @@ body {
 }
 
 .hero h2 {
-    max-width: 13ch;
-    font-family: "Fraunces", serif;
-    font-size: clamp(2.2rem, 4.5vw, 4.4rem);
-    line-height: 0.95;
-    letter-spacing: -0.04em;
+    max-width: 11ch;
+    font-family: "Sora", sans-serif;
+    font-size: clamp(2.4rem, 4vw, 4.1rem);
+    font-weight: 800;
+    line-height: 0.96;
+    letter-spacing: -0.05em;
 }
 
 .hero p:last-child {
     margin-bottom: 0;
-    max-width: 62ch;
+    max-width: 48ch;
     color: var(--muted);
-    line-height: 1.65;
+    font-size: 1.02rem;
+    line-height: 1.6;
 }
 
 .hero-guide {
@@ -144,7 +146,8 @@ body {
 
 .guide-step p {
     margin: 8px 0 0;
-    color: var(--muted);
+    color: var(--text);
+    font-weight: 600;
 }
 
 .workspace {
