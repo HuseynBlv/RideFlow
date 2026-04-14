@@ -1,18 +1,18 @@
 :root {
-    --bg: #f6f3ee;
+    --bg: #f5f4f0;
     --panel: #ffffff;
-    --panel-soft: #fbfaf8;
-    --line: #e8e2d9;
+    --panel-soft: #faf9f6;
+    --line: #e7e3dc;
     --text: #1d232c;
-    --muted: #6d7480;
+    --muted: #6f7681;
     --accent: #1d6b57;
-    --accent-soft: #e8f4ef;
+    --accent-soft: #eef6f2;
     --driver: #1f4c8f;
-    --driver-soft: #eaf1fb;
-    --shadow: 0 18px 40px rgba(31, 35, 44, 0.06);
-    --radius-xl: 28px;
-    --radius-lg: 20px;
-    --radius-md: 14px;
+    --driver-soft: #eef3fb;
+    --shadow: 0 8px 24px rgba(31, 35, 44, 0.04);
+    --radius-xl: 24px;
+    --radius-lg: 18px;
+    --radius-md: 12px;
 }
 
 * {
@@ -23,22 +23,21 @@ body {
     margin: 0;
     color: var(--text);
     background:
-        linear-gradient(180deg, rgba(29, 107, 87, 0.05), transparent 32%),
-        linear-gradient(180deg, #f8f6f2 0%, var(--bg) 100%);
+        linear-gradient(180deg, rgba(29, 107, 87, 0.03), transparent 26%),
+        linear-gradient(180deg, #f8f7f4 0%, var(--bg) 100%);
     font-family: "Manrope", sans-serif;
 }
 
 .page {
-    width: min(1380px, calc(100% - 32px));
+    width: min(1320px, calc(100% - 40px));
     margin: 0 auto;
-    padding: 24px 0 40px;
+    padding: 22px 0 36px;
 }
 
 .topbar,
 .hero,
-.column,
 .journey-card {
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.96);
     border: 1px solid var(--line);
     box-shadow: var(--shadow);
 }
@@ -48,26 +47,32 @@ body {
     justify-content: space-between;
     align-items: center;
     gap: 16px;
-    padding: 18px 22px;
-    border-radius: 18px;
+    padding: 16px 20px;
+    border-radius: 16px;
 }
 
 .brand {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
 
 .brand-mark {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
     display: grid;
     place-items: center;
-    background: linear-gradient(135deg, var(--accent), #2c8d74);
+    background: linear-gradient(135deg, var(--accent), #257d66);
     color: white;
     font-weight: 800;
     letter-spacing: 0.08em;
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .kicker,
@@ -88,42 +93,42 @@ body {
 }
 
 .brand h1 {
-    font-size: 1rem;
+    font-size: 0.98rem;
+    letter-spacing: -0.02em;
 }
 
 .hero {
-    margin-top: 18px;
+    margin-top: 16px;
     border-radius: var(--radius-xl);
-    padding: 28px 30px;
+    padding: 24px 26px;
     display: grid;
-    grid-template-columns: 1.35fr 1fr;
-    gap: 28px;
+    grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+    gap: 24px;
+    align-items: start;
 }
 
 .hero h2 {
-    max-width: 11ch;
+    max-width: 10ch;
     font-family: "Sora", sans-serif;
-    font-size: clamp(2.4rem, 4vw, 4.1rem);
+    font-size: clamp(2.2rem, 3.6vw, 3.6rem);
     font-weight: 800;
-    line-height: 0.96;
-    letter-spacing: -0.05em;
+    line-height: 0.98;
+    letter-spacing: -0.04em;
 }
 
 .hero p:last-child {
     margin-bottom: 0;
-    max-width: 48ch;
+    max-width: 42ch;
     color: var(--muted);
-    font-size: 1.02rem;
-    line-height: 1.6;
+    font-size: 0.98rem;
+    line-height: 1.58;
 }
 
 .hero-pipeline {
     border: 1px solid var(--line);
-    border-radius: 24px;
-    background:
-        radial-gradient(circle at top right, rgba(31, 76, 143, 0.08), transparent 38%),
-        linear-gradient(180deg, #ffffff 0%, #fcfbf9 100%);
-    padding: 20px;
+    border-radius: 20px;
+    background: var(--panel-soft);
+    padding: 18px;
 }
 
 .pipeline-head {
@@ -135,7 +140,7 @@ body {
 
 .pipeline-head h3 {
     margin: 4px 0 0;
-    font-size: 1.2rem;
+    font-size: 1.08rem;
 }
 
 .pipeline-badge {
@@ -154,39 +159,39 @@ body {
 }
 
 .hero-pipeline-rail {
-    margin-top: 16px;
+    margin-top: 14px;
     display: grid;
-    gap: 12px;
+    gap: 10px;
 }
 
 .pipeline-step {
     position: relative;
-    padding: 14px 16px 14px 50px;
+    padding: 13px 15px 13px 46px;
     border: 1px solid var(--line);
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.84);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.92);
     transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
 }
 
 .pipeline-step::before {
     content: "";
     position: absolute;
-    left: 18px;
-    top: 21px;
-    width: 16px;
-    height: 16px;
+    left: 16px;
+    top: 19px;
+    width: 14px;
+    height: 14px;
     border-radius: 999px;
     background: #d7dde6;
-    box-shadow: 0 0 0 6px #f3f6fa;
+    box-shadow: 0 0 0 5px #f3f6fa;
 }
 
 .pipeline-step::after {
     content: "";
     position: absolute;
-    left: 25px;
+    left: 22px;
     top: calc(100% + 1px);
     width: 2px;
-    height: 12px;
+    height: 10px;
     background: #d7dde6;
 }
 
@@ -202,7 +207,7 @@ body {
 }
 
 .pipeline-step-head strong {
-    font-size: 0.97rem;
+    font-size: 0.94rem;
 }
 
 .pipeline-step-tag {
@@ -214,10 +219,10 @@ body {
 }
 
 .pipeline-step p {
-    margin: 6px 0 0;
+    margin: 5px 0 0;
     color: var(--muted);
-    font-size: 0.9rem;
-    line-height: 1.5;
+    font-size: 0.85rem;
+    line-height: 1.45;
 }
 
 .pipeline-step.pending {
@@ -246,34 +251,33 @@ body {
 }
 
 .workspace {
-    margin-top: 20px;
+    margin-top: 22px;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 280px minmax(0, 1fr);
-    gap: 18px;
+    grid-template-columns: minmax(0, 1fr) 250px minmax(0, 1fr);
+    gap: 20px;
     align-items: start;
 }
 
 .column {
-    border-radius: 24px;
-    padding: 20px;
+    padding: 0;
     display: grid;
-    gap: 16px;
+    gap: 14px;
 }
 
 .journey {
     display: grid;
-    gap: 18px;
+    gap: 14px;
     position: sticky;
     top: 16px;
 }
 
 .journey-card {
-    border-radius: 22px;
-    padding: 18px;
+    border-radius: 18px;
+    padding: 16px;
 }
 
 .journey-card.compact {
-    max-height: 520px;
+    max-height: 420px;
     display: grid;
     grid-template-rows: auto auto 1fr;
     min-height: 0;
@@ -289,29 +293,29 @@ body {
 }
 
 .flow-rail {
-    margin-top: 16px;
+    margin-top: 14px;
     display: grid;
-    gap: 10px;
+    gap: 8px;
 }
 
 .flow-step {
     position: relative;
     display: grid;
-    grid-template-columns: 40px 1fr;
-    gap: 12px;
-    padding: 12px 14px;
+    grid-template-columns: 34px 1fr;
+    gap: 10px;
+    padding: 11px 12px;
     border: 1px solid var(--line);
-    border-radius: 16px;
-    background: #fcfbf9;
+    border-radius: 14px;
+    background: #fbfaf7;
 }
 
 .flow-step::after {
     content: "";
     position: absolute;
-    left: 32px;
+    left: 27px;
     top: calc(100% + 2px);
     width: 2px;
-    height: 10px;
+    height: 8px;
     background: #d6dde6;
 }
 
@@ -320,26 +324,26 @@ body {
 }
 
 .flow-step-index {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     display: grid;
     place-items: center;
     border-radius: 999px;
     background: #e9edf2;
     color: var(--muted);
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     font-weight: 800;
 }
 
 .flow-step strong {
     display: block;
-    font-size: 0.93rem;
+    font-size: 0.88rem;
 }
 
 .flow-step span {
     color: var(--muted);
-    font-size: 0.84rem;
-    line-height: 1.45;
+    font-size: 0.8rem;
+    line-height: 1.4;
 }
 
 .flow-step.pending {
@@ -380,9 +384,10 @@ body {
 }
 
 .section-head h3 {
-    font-family: "Fraunces", serif;
-    font-size: 1.8rem;
-    font-weight: 600;
+    font-family: "Sora", sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
 }
 
 .session-badge,
@@ -403,19 +408,19 @@ body {
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
-    padding: 18px;
+    padding: 16px;
 }
 
 .card-accent {
-    background: linear-gradient(180deg, var(--accent-soft), #ffffff 52%);
+    background: linear-gradient(180deg, rgba(29, 107, 87, 0.04), #ffffff 36%);
 }
 
 .card-driver {
-    background: linear-gradient(180deg, var(--driver-soft), #ffffff 52%);
+    background: linear-gradient(180deg, rgba(31, 76, 143, 0.04), #ffffff 36%);
 }
 
 .split-form {
-    margin-top: 14px;
+    margin-top: 12px;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px;
@@ -427,14 +432,14 @@ body {
 }
 
 .grid-form {
-    margin-top: 14px;
+    margin-top: 12px;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
 }
 
 .inline-form {
-    margin-top: 14px;
+    margin-top: 12px;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
     gap: 12px;
@@ -456,8 +461,8 @@ a {
 
 input {
     width: 100%;
-    min-height: 46px;
-    padding: 11px 13px;
+    min-height: 44px;
+    padding: 10px 12px;
     border: 1px solid #d8dde5;
     border-radius: 12px;
     background: #fff;
@@ -471,8 +476,8 @@ input:focus {
 }
 
 .button {
-    min-height: 44px;
-    padding: 10px 15px;
+    min-height: 42px;
+    padding: 9px 14px;
     border-radius: 999px;
     border: 1px solid transparent;
     cursor: pointer;
@@ -516,14 +521,14 @@ input:focus {
 
 .placeholder,
 .event-log {
-    min-height: 96px;
+    min-height: 88px;
 }
 
 .placeholder {
-    margin-top: 14px;
+    margin-top: 12px;
     border: 1px dashed var(--line);
-    border-radius: 16px;
-    padding: 18px;
+    border-radius: 14px;
+    padding: 16px;
     display: grid;
     place-items: center;
     text-align: center;
@@ -536,8 +541,8 @@ input:focus {
 .history-card,
 .event {
     border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 15px;
+    border-radius: 14px;
+    padding: 14px;
     background: #fff;
 }
 
@@ -589,7 +594,7 @@ input:focus {
 
 .ride-meta,
 .history-meta {
-    margin-top: 14px;
+    margin-top: 12px;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
@@ -607,22 +612,22 @@ input:focus {
 }
 
 .event-log {
-    margin-top: 12px;
+    margin-top: 10px;
     overflow: auto;
-    max-height: 320px;
+    max-height: 260px;
 }
 
 .event {
     display: grid;
-    gap: 6px;
+    gap: 4px;
 }
 
 .event strong {
-    font-size: 0.92rem;
+    font-size: 0.88rem;
 }
 
 .event-time {
-    font-size: 0.78rem;
+    font-size: 0.74rem;
     color: var(--muted);
 }
 
@@ -640,6 +645,10 @@ input:focus {
     .journey {
         position: static;
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .hero {
+        grid-template-columns: 1fr;
     }
 }
 
