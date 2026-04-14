@@ -468,9 +468,10 @@ function readForm(form) {
 function bindForms() {
     document.querySelector("#rider-register-form").addEventListener("submit", async (event) => {
         event.preventDefault();
+        const form = event.currentTarget;
         try {
-            await register("rider", readForm(event.currentTarget));
-            event.currentTarget.reset();
+            await register("rider", readForm(form));
+            form.reset();
             renderSessionBadges();
         } catch (error) {
             logEvent("rider register failed", error.message, "error");
@@ -479,9 +480,10 @@ function bindForms() {
 
     document.querySelector("#driver-register-form").addEventListener("submit", async (event) => {
         event.preventDefault();
+        const form = event.currentTarget;
         try {
-            await register("driver", readForm(event.currentTarget));
-            event.currentTarget.reset();
+            await register("driver", readForm(form));
+            form.reset();
             renderSessionBadges();
         } catch (error) {
             logEvent("driver register failed", error.message, "error");
@@ -490,8 +492,9 @@ function bindForms() {
 
     document.querySelector("#rider-login-form").addEventListener("submit", async (event) => {
         event.preventDefault();
+        const form = event.currentTarget;
         try {
-            await login("rider", readForm(event.currentTarget));
+            await login("rider", readForm(form));
             renderSessionBadges();
             await refreshHistory("rider");
         } catch (error) {
@@ -501,8 +504,9 @@ function bindForms() {
 
     document.querySelector("#driver-login-form").addEventListener("submit", async (event) => {
         event.preventDefault();
+        const form = event.currentTarget;
         try {
-            await login("driver", readForm(event.currentTarget));
+            await login("driver", readForm(form));
             renderSessionBadges();
             await refreshDriverStatus();
             await refreshHistory("driver");
