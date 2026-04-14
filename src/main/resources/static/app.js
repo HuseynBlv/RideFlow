@@ -41,7 +41,9 @@ const elements = {
     driverRideId: document.querySelector("#driver-ride-id"),
     eventLog: document.querySelector("#event-log"),
     flowRail: document.querySelector("#flow-rail"),
-    flowStateLabel: document.querySelector("#flow-state-label")
+    flowStateLabel: document.querySelector("#flow-state-label"),
+    heroPipeline: document.querySelector("#hero-pipeline"),
+    pipelineStateLabel: document.querySelector("#pipeline-state-label")
 };
 
 const flowSteps = [
@@ -52,6 +54,17 @@ const flowSteps = [
     { key: "assigned", title: "Driver assigned", detail: "One driver accepts the offer." },
     { key: "progress", title: "Trip in progress", detail: "Driver starts the ride." },
     { key: "completed", title: "Trip completed", detail: "Fare is finalized and payment simulated." }
+];
+
+const pipelineSteps = [
+    { key: "auth", tag: "Auth", title: "JWT sessions created", detail: "Rider and driver can call protected API routes." },
+    { key: "geo", tag: "Geo", title: "Driver location indexed", detail: "Coordinates are stored and heartbeat freshness starts." },
+    { key: "availability", tag: "Dispatch", title: "Driver marked available", detail: "The driver can now appear in nearby search." },
+    { key: "ride", tag: "Ride", title: "Ride record created", detail: "Pickup, dropoff, and estimated fare are stored." },
+    { key: "search", tag: "Matching", title: "Nearby drivers queried", detail: "The system filters by distance, freshness, and availability." },
+    { key: "assign", tag: "Locking", title: "Assignment committed", detail: "One accept wins and the ride is locked to that driver." },
+    { key: "trip", tag: "Realtime", title: "Trip status broadcast", detail: "Ride updates are pushed as the trip moves forward." },
+    { key: "payment", tag: "Settlement", title: "Fare finalized", detail: "Final fare is computed and payment is marked captured." }
 ];
 
 function rememberSession(role, authResponse) {
@@ -217,6 +230,40 @@ function deriveFlowState() {
     return "idle";
 }
 
+function derivePipelineState() {
+    const rideStatus = state.currentRideStatus || "";
+    const driverStatus = state.currentDriverStatus || "";
+    const hasAccounts = Boolean(state.rider.token && state.driver.token);
+    const hasLocation = Boolean(state.driver.hasLocation);
+    const isOnline = driverStatus === "AVAILABLE" || driverStatus === "BUSY";
+
+    if (rideStatus === "COMPLETED") {
+        return "payment";
+    }
+    if (rideStatus === "IN_PROGRESS") {
+        return "trip";
+    }
+    if (rideStatus === "DRIVER_ASSIGNED" || rideStatus === "DRIVER_ARRIVING") {
+        return "assign";
+    }
+    if (rideStatus === "MATCHING" || rideStatus === "REQUESTED") {
+        return "search";
+    }
+    if (state.rider.rideId) {
+        return "ride";
+    }
+    if (isOnline) {
+        return "availability";
+    }
+    if (hasLocation) {
+        return "geo";
+    }
+    if (hasAccounts) {
+        return "auth";
+    }
+    return "idle";
+}
+
 function renderFlowState() {
     const current = deriveFlowState();
     const currentIndex = flowSteps.findIndex((step) => step.key === current);
@@ -238,6 +285,30 @@ function renderFlowState() {
                     <strong>${step.title}</strong>
                     <span>${step.detail}</span>
                 </div>
+            </article>
+        `;
+    }).join("");
+
+    const pipelineCurrent = derivePipelineState();
+    const pipelineIndex = pipelineSteps.findIndex((step) => step.key === pipelineCurrent);
+    elements.pipelineStateLabel.textContent = pipelineCurrent === "idle"
+        ? "System idle"
+        : pipelineSteps[pipelineIndex].tag;
+
+    elements.heroPipeline.innerHTML = pipelineSteps.map((step, index) => {
+        let tone = "pending";
+        if (pipelineIndex >= 0 && index < pipelineIndex) {
+            tone = "done";
+        } else if (pipelineIndex === index) {
+            tone = "active";
+        }
+        return `
+            <article class="pipeline-step ${tone}">
+                <div class="pipeline-step-head">
+                    <strong>${step.title}</strong>
+                    <span class="pipeline-step-tag">${step.tag}</span>
+                </div>
+                <p>${step.detail}</p>
             </article>
         `;
     }).join("");
