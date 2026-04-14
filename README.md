@@ -107,6 +107,90 @@ flowchart TB
     RIDE --> PAY["Simulated Payment"]
 ```
 
+## Fare Calculation
+
+RideFlow uses a simple but explicit fare policy that is close to how a ride-hailing MVP should behave.
+
+The configured formula is:
+
+```text
+fare = max(
+  minimum_fare,
+  base_fare
+  + booking_fee
+  + (billable_distance_km * per_km_rate)
+  + (billable_duration_min * per_minute_rate)
+)
+```
+
+The values are configured in [application.yml](/Users/huseynbva/RideFlow/src/main/resources/application.yml) under `app.pricing`.
+
+### How distance is calculated
+
+- The backend first computes straight-line distance between pickup and dropoff using the Haversine formula.
+- That direct distance is then multiplied by `route-distance-multiplier`.
+- This multiplier is intentional. Straight-line distance underestimates a real road trip, so the multiplier makes the estimate more realistic without calling an external routing provider.
+- The adjusted result becomes the billable distance.
+
+### How duration is calculated
+
+- Estimated fare uses the billable distance and `estimated-average-speed-kph` to infer trip time.
+- Estimated duration is rounded up and never goes below `minimum-estimated-duration-minutes`.
+- Final fare uses actual trip time if the ride was started.
+- Actual trip duration is measured from `startedAt` to completion time, rounded up to the next minute, and never goes below `minimum-final-duration-minutes`.
+- If a ride is completed without a `startedAt` timestamp, the system falls back to the estimated duration path.
+
+### Why this design is useful
+
+- The fare policy is deterministic and easy to explain in an interview.
+- It avoids undercharging on very short trips because of the minimum fare floor.
+- It avoids underestimating real road distance while still staying backend-only.
+- It keeps pricing logic centralized in [PricingService.java](/Users/huseynbva/RideFlow/src/main/java/com/rideflow/uberclone/pricing/service/PricingService.java), so ride controllers and state transitions do not embed pricing rules.
+
+## Geo Matching Logic
+
+The driver-rider matching path separates fast-changing location data from transactional ride state.
+
+### Driver location lifecycle
+
+- A driver sends location updates through `POST /drivers/me/location`.
+- The latest latitude and longitude are stored on the driver profile in PostgreSQL as the persistent source of truth.
+- The same location is also written into the geo index:
+  - Redis GEO in the default profile
+  - in-memory index in the `local` profile for easier demo/testing
+- Every location update also refreshes a heartbeat TTL.
+
+### How rider-to-driver matching works
+
+When a rider requests a trip:
+
+1. The ride is created in PostgreSQL.
+2. The backend queries the geo index for drivers near the pickup point within the configured radius.
+3. Candidate drivers are sorted by distance ascending.
+4. The backend filters out drivers who are not actually `AVAILABLE`.
+5. The backend also filters out stale drivers whose heartbeat or `lastLocationAt` is older than the freshness window.
+6. The remaining drivers become ride-offer candidates.
+
+This means geographical proximity alone is not enough. A driver must satisfy all of these conditions:
+
+- be inside the configured search radius
+- have a fresh heartbeat
+- have a recent persisted location timestamp
+- currently be in `AVAILABLE` status
+
+### Why both Redis and PostgreSQL are involved
+
+- Redis is optimized for fast nearby-driver lookup.
+- PostgreSQL remains the source of truth for driver status, ride ownership, and ride assignment.
+- This avoids using Redis alone as the authority for dispatch decisions.
+- During ride acceptance, the actual winner is decided transactionally in the ride service, not by the geo index.
+
+### Operational effect
+
+- If a driver stops sending location, the heartbeat expires and the driver drops out of matching.
+- If a driver becomes `BUSY`, the driver is filtered out even if their location is still nearby.
+- When a driver accepts a ride, the driver is removed from the geo index so they do not keep receiving competing offers.
+
 ## Notes
 
 - PostgreSQL remains the source of truth for ride ownership and ride state.
