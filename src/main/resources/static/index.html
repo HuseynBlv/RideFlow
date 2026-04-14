@@ -120,16 +120,14 @@
 
         <section class="journey">
             <div class="journey-card">
-                <p class="eyebrow">Journey</p>
-                <ol class="journey-steps">
-                    <li>Create rider and driver accounts</li>
-                    <li>Push driver location</li>
-                    <li>Put driver online</li>
-                    <li>Request ride</li>
-                    <li>Accept ride</li>
-                    <li>Start trip</li>
-                    <li>Complete trip</li>
-                </ol>
+                <div class="card-head">
+                    <div>
+                        <p class="eyebrow">Journey</p>
+                        <h4>Live process flow</h4>
+                    </div>
+                    <span class="card-tag" id="flow-state-label">Waiting to start</span>
+                </div>
+                <div id="flow-rail" class="flow-rail"></div>
             </div>
 
             <div class="journey-card compact">

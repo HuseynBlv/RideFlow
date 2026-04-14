@@ -75,6 +75,38 @@ http://localhost:8080/
 5. Accept the ride as a driver.
 6. Start and complete the ride as the assigned driver.
 
+## Process Flow
+
+```mermaid
+flowchart LR
+    A["Rider registers / logs in"] --> B["Driver registers / logs in"]
+    B --> C["Driver updates location"]
+    C --> D["Driver goes online"]
+    D --> E["Rider requests ride"]
+    E --> F["Backend finds nearby available drivers"]
+    F --> G["Driver accepts ride"]
+    G --> H["Ride state = DRIVER_ASSIGNED"]
+    H --> I["Driver starts trip"]
+    I --> J["Ride state = IN_PROGRESS"]
+    J --> K["Driver completes trip"]
+    K --> L["Fare calculated and payment simulated"]
+    L --> M["Ride state = COMPLETED"]
+```
+
+## System View
+
+```mermaid
+flowchart TB
+    UI["Demo UI / Client"] --> API["Spring Boot API"]
+    API --> AUTH["JWT Auth"]
+    API --> RIDE["Ride State Machine"]
+    API --> GEO["Driver Geo Index"]
+    API --> WS["WebSocket Notifications"]
+    RIDE --> DB["PostgreSQL / PostGIS"]
+    GEO --> REDIS["Redis"]
+    RIDE --> PAY["Simulated Payment"]
+```
+
 ## Notes
 
 - PostgreSQL remains the source of truth for ride ownership and ride state.

@@ -20,8 +20,20 @@ const elements = {
     driverHistory: document.querySelector("#driver-history"),
     driverStatus: document.querySelector("#driver-status"),
     driverRideId: document.querySelector("#driver-ride-id"),
-    eventLog: document.querySelector("#event-log")
+    eventLog: document.querySelector("#event-log"),
+    flowRail: document.querySelector("#flow-rail"),
+    flowStateLabel: document.querySelector("#flow-state-label")
 };
+
+const flowSteps = [
+    { key: "accounts", title: "Accounts ready", detail: "Create a rider and a driver session." },
+    { key: "location", title: "Driver location sent", detail: "Driver posts current coordinates." },
+    { key: "online", title: "Driver online", detail: "Driver becomes available for matching." },
+    { key: "requested", title: "Ride requested", detail: "Rider submits pickup and dropoff." },
+    { key: "assigned", title: "Driver assigned", detail: "One driver accepts the offer." },
+    { key: "progress", title: "Trip in progress", detail: "Driver starts the ride." },
+    { key: "completed", title: "Trip completed", detail: "Fare is finalized and payment simulated." }
+];
 
 function rememberSession(role, authResponse) {
     state[role].token = authResponse.accessToken;
@@ -107,6 +119,63 @@ function renderSessionBadges() {
     elements.driverRideId.value = state.driver.rideId || state.rider.rideId || "";
 }
 
+function deriveFlowState() {
+    const rideStatus = state.currentRideStatus || "";
+    const driverStatus = state.currentDriverStatus || "";
+    const hasAccounts = Boolean(state.rider.token && state.driver.token);
+    const hasLocation = Boolean(state.driver.hasLocation);
+    const isOnline = driverStatus === "AVAILABLE" || driverStatus === "BUSY";
+
+    if (rideStatus === "COMPLETED") {
+        return "completed";
+    }
+    if (rideStatus === "IN_PROGRESS") {
+        return "progress";
+    }
+    if (rideStatus === "DRIVER_ASSIGNED" || rideStatus === "DRIVER_ARRIVING") {
+        return "assigned";
+    }
+    if (rideStatus === "MATCHING" || rideStatus === "REQUESTED") {
+        return "requested";
+    }
+    if (isOnline) {
+        return "online";
+    }
+    if (hasLocation) {
+        return "location";
+    }
+    if (hasAccounts) {
+        return "accounts";
+    }
+    return "idle";
+}
+
+function renderFlowState() {
+    const current = deriveFlowState();
+    const currentIndex = flowSteps.findIndex((step) => step.key === current);
+    elements.flowStateLabel.textContent = current === "idle"
+        ? "Waiting to start"
+        : flowSteps[currentIndex].title;
+
+    elements.flowRail.innerHTML = flowSteps.map((step, index) => {
+        let tone = "pending";
+        if (currentIndex >= 0 && index < currentIndex) {
+            tone = "done";
+        } else if (currentIndex === index) {
+            tone = "active";
+        }
+        return `
+            <article class="flow-step ${tone}">
+                <div class="flow-step-index">${index + 1}</div>
+                <div>
+                    <strong>${step.title}</strong>
+                    <span>${step.detail}</span>
+                </div>
+            </article>
+        `;
+    }).join("");
+}
+
 function statusClass(status) {
     return (status || "unknown").toLowerCase();
 }
@@ -114,8 +183,13 @@ function statusClass(status) {
 function renderRide(target, ride, emptyText) {
     if (!ride) {
         target.innerHTML = `<div class="empty-state">${emptyText}</div>`;
+        if (target === elements.riderCurrentRide || target === elements.driverCurrentRide) {
+            state.currentRideStatus = "";
+            renderFlowState();
+        }
         return;
     }
+    state.currentRideStatus = ride.status;
     const candidateLine = Array.isArray(ride.candidateDriverIds) && ride.candidateDriverIds.length
         ? `<div><strong>Candidates</strong>${ride.candidateDriverIds.join(", ")}</div>`
         : "";
@@ -139,6 +213,7 @@ function renderRide(target, ride, emptyText) {
             </div>
         </article>
     `;
+    renderFlowState();
 }
 
 function renderHistory(target, rides, emptyText) {
@@ -166,8 +241,13 @@ function renderHistory(target, rides, emptyText) {
 function renderDriverStatus(status) {
     if (!status) {
         elements.driverStatus.innerHTML = `<div class="empty-state">Driver status will appear here.</div>`;
+        state.currentDriverStatus = "";
+        state.driver.hasLocation = false;
+        renderFlowState();
         return;
     }
+    state.currentDriverStatus = status.status;
+    state.driver.hasLocation = Boolean(status.latitude !== null && status.longitude !== null);
     elements.driverStatus.innerHTML = `
         <article class="status-card">
             <div class="panel-heading">
@@ -181,6 +261,7 @@ function renderDriverStatus(status) {
             </div>
         </article>
     `;
+    renderFlowState();
 }
 
 async function refreshRide(role) {
@@ -422,6 +503,7 @@ function startPolling() {
 }
 
 async function boot() {
+    renderFlowState();
     renderSessionBadges();
     bindForms();
     bindButtons();

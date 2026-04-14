@@ -190,6 +190,84 @@ body {
     line-height: 1.45;
 }
 
+.flow-rail {
+    margin-top: 16px;
+    display: grid;
+    gap: 10px;
+}
+
+.flow-step {
+    position: relative;
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: #fcfbf9;
+}
+
+.flow-step::after {
+    content: "";
+    position: absolute;
+    left: 32px;
+    top: calc(100% + 2px);
+    width: 2px;
+    height: 10px;
+    background: #d6dde6;
+}
+
+.flow-step:last-child::after {
+    display: none;
+}
+
+.flow-step-index {
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: #e9edf2;
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.flow-step strong {
+    display: block;
+    font-size: 0.93rem;
+}
+
+.flow-step span {
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.45;
+}
+
+.flow-step.pending {
+    opacity: 0.72;
+}
+
+.flow-step.active {
+    border-color: #bed5ff;
+    background: #f4f8ff;
+}
+
+.flow-step.active .flow-step-index {
+    background: var(--driver);
+    color: white;
+}
+
+.flow-step.done {
+    border-color: #b9ddcf;
+    background: #f0f8f4;
+}
+
+.flow-step.done .flow-step-index {
+    background: var(--accent);
+    color: white;
+}
+
 .journey-actions {
     margin-top: 10px;
 }
