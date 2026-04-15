@@ -44,48 +44,6 @@ The default local credentials are configured in [application.yml](/Users/huseynb
 http://localhost:8080/
 ```
 
-## Fast Render deployment
-
-The easiest public deployment for this project is Render. The app already serves the UI from `/`, so you only need one web service plus Postgres and Redis.
-
-### Files used
-
-- [render.yaml](/Users/huseynbva/RideFlow/render.yaml)
-- [Dockerfile](/Users/huseynbva/RideFlow/Dockerfile)
-
-### What you need to do
-
-1. Push the latest `main` branch to GitHub.
-2. Sign in to [Render](https://render.com/).
-3. In Render, choose `New` -> `Blueprint`.
-4. Connect your GitHub repo and select this repository.
-5. Render will detect [render.yaml](/Users/huseynbva/RideFlow/render.yaml) and propose:
-   - one web service: `rideflow-app`
-   - one Postgres database: `rideflow-db`
-   - one Redis-compatible Key Value instance: `rideflow-redis`
-6. Review the plans and region, then create the Blueprint.
-7. Wait for the initial deploy to finish.
-8. Open the `rideflow-app` URL from the Render dashboard.
-
-### What Render handles for you
-
-- generates `JWT_SECRET`
-- provisions Postgres
-- provisions Redis
-- injects database and Redis connection settings into the web service
-- runs health checks against `/actuator/health`
-- rebuilds and redeploys on each push to the connected branch
-
-### Important note
-
-- Render web services expect your app to listen on the `PORT` environment variable. This repo is already configured for that in [application.yml](/Users/huseynbva/RideFlow/src/main/resources/application.yml).
-
-### After deploy
-
-- Open the app URL and test the UI first.
-- Open `/swagger-ui.html` on the same domain if you want API access.
-- If you plan to show this to HR, create one rider and one driver account and keep the demo flow simple.
-
 ## Key API endpoints
 
 - `POST /auth/register`
