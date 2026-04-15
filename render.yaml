@@ -35,6 +35,7 @@ services:
 
   - type: keyvalue
     name: rideflow-redis
+    ipAllowList: []
 
 databases:
   - name: rideflow-db
