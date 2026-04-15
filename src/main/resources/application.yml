@@ -17,6 +17,7 @@ spring:
     locations: classpath:db/migration
   data:
     redis:
+      url: ${REDIS_URL:redis://${REDIS_HOST:localhost}:${REDIS_PORT:6379}}
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       repositories:
@@ -59,3 +60,6 @@ management:
 logging:
   level:
     com.rideflow.uberclone: INFO
+
+server:
+  port: ${PORT:8080}
