@@ -44,6 +44,73 @@ The default local credentials are configured in [application.yml](/Users/huseynb
 http://localhost:8080/
 ```
 
+## Fast AWS deployment
+
+The fastest path for a public demo is a single small EC2 instance running the frontend and backend together through Docker Compose. The Spring Boot app serves the UI from `/`, so you only need one public URL.
+
+### What this path gives you
+
+- one EC2 instance
+- one public URL
+- Spring Boot app on port `80`
+- PostgreSQL + PostGIS in Docker
+- Redis in Docker
+- no frontend/backend split deployment
+
+### Files used
+
+- [Dockerfile](/Users/huseynbva/RideFlow/Dockerfile)
+- [compose.ec2.yml](/Users/huseynbva/RideFlow/compose.ec2.yml)
+- [.env.ec2.example](/Users/huseynbva/RideFlow/.env.ec2.example)
+
+### EC2 setup steps
+
+1. Launch an Ubuntu EC2 instance.
+2. Open inbound security-group rules for:
+   - `80` from the internet
+   - `22` from your IP only
+3. SSH into the box and install Docker + Compose plugin.
+4. Clone this repo onto the instance.
+5. Copy `.env.ec2.example` to `.env.ec2` and set a real `JWT_SECRET` and database password.
+6. Start the stack:
+
+```bash
+docker compose -f compose.ec2.yml --env-file .env.ec2 up -d --build
+```
+
+7. Open:
+
+```text
+http://<your-ec2-public-ip>/
+```
+
+### Useful commands
+
+Start or update after a pull:
+
+```bash
+docker compose -f compose.ec2.yml --env-file .env.ec2 up -d --build
+```
+
+View logs:
+
+```bash
+docker compose -f compose.ec2.yml --env-file .env.ec2 logs -f app
+```
+
+Stop the stack:
+
+```bash
+docker compose -f compose.ec2.yml --env-file .env.ec2 down
+```
+
+### Notes for a public demo
+
+- This is the fastest path, not the most production-hardened one.
+- For HR use, the main value is a stable public link and a self-contained demo flow.
+- Before sharing, replace the default sample credentials and use a strong `JWT_SECRET`.
+- If you later want HTTPS and a domain, add Nginx + Let’s Encrypt in front of the app or move to an AWS load balancer.
+
 ## Key API endpoints
 
 - `POST /auth/register`
