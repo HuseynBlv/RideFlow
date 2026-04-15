@@ -17,7 +17,6 @@ spring:
     locations: classpath:db/migration
   data:
     redis:
-      url: ${REDIS_URL:redis://${REDIS_HOST:localhost}:${REDIS_PORT:6379}}
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       repositories:
@@ -47,19 +46,6 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-  endpoint:
-    health:
-      probes:
-        enabled: true
-
 logging:
   level:
     com.rideflow.uberclone: INFO
-
-server:
-  port: ${PORT:8080}
